@@ -11,7 +11,7 @@ function Navbar() {
             <div className="navbar-container">
                 <Link to="/" className="navbar-brand">
                     <FaBoxOpen style={{ marginRight: '0.5rem' }} />
-                    Sokrio DMS
+                    DMS
                 </Link>
                 <ul className="navbar-nav">
                     <li>

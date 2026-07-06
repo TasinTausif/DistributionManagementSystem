@@ -5,7 +5,7 @@ function Home() {
     return (
         <div className="container">
             <div className="hero">
-                <h1>Welcome to Sokrio</h1>
+                <h1>Welcome to DMS</h1>
                 <p>
                     Advanced Distribution Management System for fresh groceries, household essentials,
                     and specialty products. Manage your inventory with ease and efficiency.
