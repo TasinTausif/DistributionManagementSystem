@@ -7,7 +7,6 @@ const Select = forwardRef(({
     error,
     className = '',
     children,
-    defaultValue,
     value,
     ...props
 }, ref) => {

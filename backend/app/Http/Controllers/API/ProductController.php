@@ -52,7 +52,7 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/products', $imageName);
+            $image->storeAs('products', $imageName, 'public');
             $data['image'] = 'products/' . $imageName;
         }
 
@@ -133,12 +133,12 @@ class ProductController extends Controller
         if ($request->hasFile('image')) {
             // Delete old image
             if ($product->image) {
-                Storage::delete('public/' . $product->image);
+                Storage::disk('public')->delete($product->image);
             }
 
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/products', $imageName);
+            $image->storeAs('products', $imageName, 'public');
             $data['image'] = 'products/' . $imageName;
         }
 
@@ -173,7 +173,7 @@ class ProductController extends Controller
 
         // Delete image
         if ($product->image) {
-            Storage::delete('public/' . $product->image);
+            Storage::disk('public')->delete($product->image);
         }
 
         $product->delete();

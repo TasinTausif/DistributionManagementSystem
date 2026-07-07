@@ -10,6 +10,17 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+        port: 3000,
+        // setting up proxy URL
+        proxy: {
+            '/api': {
+                target: 'http://localhost:5000',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, '')
+            }
+        }
+    },
   test: {
     environment: 'jsdom',
     setupFiles: './src/setupTests.js',

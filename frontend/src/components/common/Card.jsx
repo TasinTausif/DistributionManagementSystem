@@ -1,5 +1,4 @@
 import { FaTrash, FaEdit } from 'react-icons/fa';
-import { getImageUrl } from '../../utils/imageUrl';
 
 const Card = ({
     children,
