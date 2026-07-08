@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $products = Product::orderBy('created_at', 'desc')->get();
@@ -23,9 +20,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -48,7 +42,6 @@ class ProductController extends Controller
 
         $data = $validator->validated();
 
-        // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
@@ -68,9 +61,6 @@ class ProductController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $product = Product::with('inventoryTransactions')->find($id);
@@ -91,9 +81,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $product = Product::find($id);
@@ -129,9 +116,7 @@ class ProductController extends Controller
 
         $data = $validator->validated();
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
@@ -154,9 +139,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $product = Product::find($id);
@@ -171,7 +153,6 @@ class ProductController extends Controller
             ], 404);
         }
 
-        // Delete image
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
@@ -185,5 +166,12 @@ class ProductController extends Controller
                 'message' => 'Product deleted successfully!'
             ]
         ]);
+    }
+
+    public function image(string $path)
+    {
+        abort_unless(Storage::disk('public')->exists($path), 404);
+
+        return Storage::disk('public')->response($path);
     }
 }

@@ -1,9 +1,3 @@
-/**
- * Get the full URL for an image stored on the backend.
- * 
- * @param {string} path - The relative path from the storage root (e.g., 'products/123.jpg')
- * @returns {string} - The full URL to the image
- */
 export const getImageUrl = (path) => {
     if (!path) return '';
 

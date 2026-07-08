@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaEdit, FaArrowLeft, FaCheck, FaTimes, FaBox, FaTag, FaClock, FaHistory, FaCloudUploadAlt } from 'react-icons/fa';
 import api from '../api';
@@ -15,33 +15,39 @@ function ProductDetails() {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
-    const fetchProduct = useCallback(async () => {
-        try {
-            const response = await api.get(`/products/${id}`);
-            setProduct(response.data.data);
-            setFormData(response.data.data);
-            setImageFile(null);
-            setImagePreview(null);
-        } catch (error) {
-            console.error('Error fetching product:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [id]);
+    const typeOptions = [
+        { value: 'fresh_groceries', label: 'Fresh Groceries' },
+        { value: 'household_essential', label: 'Household Essential' },
+        { value: 'specialty', label: 'Specialty' },
+    ];
 
     useEffect(() => {
-        fetchProduct();
-    }, [fetchProduct]);
+        const loadProduct = async () => {
+            try {
+                const response = await api.get(`/products/${id}`);
+                setProduct(response.data.data);
+                setFormData(response.data.data);
+                setImageFile(null);
+                setImagePreview(null);
+            } catch (error) {
+                console.error('Error fetching product:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const handleChange = useCallback((e) => {
+        loadProduct();
+    }, [id]);
+
+    const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
-    }, []);
+    };
 
-    const handleImageChange = useCallback((e) => {
+    const handleImageChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -51,7 +57,7 @@ function ProductDetails() {
 
         setImageFile(file);
         setImagePreview(URL.createObjectURL(file));
-    }, [imagePreview]);
+    };
 
     useEffect(() => {
         return () => {
@@ -61,15 +67,18 @@ function ProductDetails() {
         };
     }, [imagePreview]);
 
-    const handleUpdate = useCallback(async (e) => {
+    const handleUpdate = async (e) => {
         e.preventDefault();
-        const fields = ['name', 'description', 'category', 'type', 'price', 'stock', 'sku', 'is_active'];
-        const payload = fields.reduce((data, key) => {
-            if (formData[key] !== undefined && formData[key] !== null) {
-                data[key] = formData[key];
-            }
-            return data;
-        }, {});
+        const payload = {
+            name: formData.name,
+            sku: formData.sku,
+            description: formData.description || '',
+            category: formData.category,
+            type: formData.type,
+            price: formData.price,
+            stock: formData.stock,
+            is_active: formData.is_active,
+        };
 
         try {
             if (imageFile) {
@@ -84,29 +93,28 @@ function ProductDetails() {
             }
 
             setEditing(false);
-            fetchProduct();
+
+            const response = await api.get(`/products/${id}`);
+            setProduct(response.data.data);
+            setFormData(response.data.data);
+            setImageFile(null);
+            setImagePreview(null);
         } catch (error) {
             console.error('Error updating product:', error);
         }
-    }, [id, formData, imageFile, fetchProduct]);
+    };
 
-    const typeOptions = useMemo(() => [
-        { value: 'fresh_groceries', label: 'Fresh Groceries' },
-        { value: 'household_essential', label: 'Household Essential' },
-        { value: 'specialty', label: 'Specialty' },
-    ], []);
-
-    const getStockVariant = useCallback((stock) => {
+    const getStockVariant = (stock) => {
         if (stock > 10) return 'success';
         if (stock > 0) return 'warning';
         return 'danger';
-    }, []);
+    };
 
-    const getStockText = useCallback((stock) => {
+    const getStockText = (stock) => {
         if (stock > 10) return 'In Stock';
         if (stock > 0) return 'Low Stock';
         return 'Out of Stock';
-    }, []);
+    };
 
     if (loading) {
         return <div className="loading">Loading product details...</div>;
