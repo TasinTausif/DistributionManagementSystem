@@ -2,7 +2,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -15,7 +15,6 @@ api.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // If sending FormData, remove Content-Type to let browser set it automatically
     if (config.data instanceof FormData) {
         delete config.headers['Content-Type'];
     }
@@ -24,7 +23,6 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use((response) => {
-    // Check if backend sent an alert
     if (response.data && response.data.alert) {
         const { type, message } = response.data.alert;
         Swal.fire({

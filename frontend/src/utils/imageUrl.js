@@ -5,7 +5,7 @@ export const getImageUrl = (path) => {
         return path;
     }
 
-    const apiUrl = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+    const apiUrl = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
     const cleanPath = path.replace(/^\//, '').replace(/^storage\//, '');
 
     return `${apiUrl}/product-images/${cleanPath}`;
