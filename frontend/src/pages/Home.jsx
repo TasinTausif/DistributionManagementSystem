@@ -56,7 +56,7 @@ function Home() {
                 </div>
             </div>
 
-            <div className="card" style={{ marginTop: '3rem' }}>
+            {/* <div className="card" style={{ marginTop: '3rem' }}>
                 <h2 className="card-title">Key Features</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
                     <div>
@@ -87,7 +87,7 @@ function Home() {
                         </p>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 }

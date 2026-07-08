@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaEdit, FaArrowLeft, FaCheck, FaTimes, FaBox, FaTag, FaClock, FaHistory } from 'react-icons/fa';
+import { FaEdit, FaArrowLeft, FaCheck, FaTimes, FaBox, FaTag, FaClock, FaHistory, FaCloudUploadAlt } from 'react-icons/fa';
 import api from '../api';
 import { getImageUrl } from '../utils/imageUrl';
 import { Card, Button, Input, Select, Textarea, Badge } from '../components';
@@ -12,12 +12,16 @@ function ProductDetails() {
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState({});
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     const fetchProduct = useCallback(async () => {
         try {
             const response = await api.get(`/products/${id}`);
             setProduct(response.data.data);
             setFormData(response.data.data);
+            setImageFile(null);
+            setImagePreview(null);
         } catch (error) {
             console.error('Error fetching product:', error);
         } finally {
@@ -37,16 +41,54 @@ function ProductDetails() {
         }));
     }, []);
 
+    const handleImageChange = useCallback((e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    }, [imagePreview]);
+
+    useEffect(() => {
+        return () => {
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
+
     const handleUpdate = useCallback(async (e) => {
         e.preventDefault();
+        const fields = ['name', 'description', 'category', 'type', 'price', 'stock', 'sku', 'is_active'];
+        const payload = fields.reduce((data, key) => {
+            if (formData[key] !== undefined && formData[key] !== null) {
+                data[key] = formData[key];
+            }
+            return data;
+        }, {});
+
         try {
-            await api.put(`/products/${id}`, formData);
+            if (imageFile) {
+                const data = new FormData();
+                Object.entries(payload).forEach(([key, value]) => {
+                    data.append(key, value);
+                });
+                data.append('image', imageFile);
+                await api.post(`/products/${id}`, data);
+            } else {
+                await api.put(`/products/${id}`, payload);
+            }
+
             setEditing(false);
             fetchProduct();
         } catch (error) {
             console.error('Error updating product:', error);
         }
-    }, [id, formData, fetchProduct]);
+    }, [id, formData, imageFile, fetchProduct]);
 
     const typeOptions = useMemo(() => [
         { value: 'fresh_groceries', label: 'Fresh Groceries' },
@@ -96,7 +138,14 @@ function ProductDetails() {
                         <Input
                             label="Product Name"
                             name="name"
-                            value={formData.name}
+                            value={formData.name || ''}
+                            onChange={handleChange}
+                        />
+
+                        <Input
+                            label="SKU"
+                            name="sku"
+                            value={formData.sku || ''}
                             onChange={handleChange}
                         />
 
@@ -112,14 +161,14 @@ function ProductDetails() {
                             <Input
                                 label="Category"
                                 name="category"
-                                value={formData.category}
+                                value={formData.category || ''}
                                 onChange={handleChange}
                             />
 
                             <Select
                                 label="Type"
                                 name="type"
-                                value={formData.type}
+                                value={formData.type || 'fresh_groceries'}
                                 onChange={handleChange}
                                 options={typeOptions}
                             />
@@ -130,7 +179,7 @@ function ProductDetails() {
                                 label="Price ($)"
                                 name="price"
                                 type="number"
-                                value={formData.price}
+                                value={formData.price || ''}
                                 onChange={handleChange}
                                 step="0.01"
                             />
@@ -139,9 +188,50 @@ function ProductDetails() {
                                 label="Stock"
                                 name="stock"
                                 type="number"
-                                value={formData.stock}
+                                value={formData.stock ?? ''}
                                 onChange={handleChange}
                             />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Product Image</label>
+                            <div style={{
+                                border: '2px dashed var(--border-color)',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                position: 'relative'
+                            }}>
+                                <input
+                                    type="file"
+                                    name="image"
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        opacity: 0,
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                                {imagePreview || product.image ? (
+                                    <img
+                                        src={imagePreview || getImageUrl(product.image)}
+                                        alt="Product preview"
+                                        style={{ maxHeight: '220px', maxWidth: '100%', borderRadius: '8px', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    <div style={{ color: 'var(--text-secondary)' }}>
+                                        <FaCloudUploadAlt size={42} style={{ marginBottom: '1rem' }} />
+                                        <p>Click or drag image here to upload</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="btn-group">
@@ -153,6 +243,8 @@ function ProductDetails() {
                                 onClick={() => {
                                     setEditing(false);
                                     setFormData(product);
+                                    setImageFile(null);
+                                    setImagePreview(null);
                                 }}
                                 icon={FaTimes}
                             >

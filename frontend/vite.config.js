@@ -3,16 +3,17 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
-      },
-    }),
-  ],
-  server: {
+    base: '/',
+    plugins: [
+        react({
+            babel: {
+                plugins: [['babel-plugin-react-compiler']],
+            },
+        }),
+    ],
+    server: {
+        host: true,
         port: 3000,
-        // setting up proxy URL
         proxy: {
             '/api': {
                 target: 'http://localhost:5000',
@@ -20,10 +21,5 @@ export default defineConfig({
                 rewrite: (path) => path.replace(/^\/api/, '')
             }
         }
-    },
-  test: {
-    environment: 'jsdom',
-    setupFiles: './src/setupTests.js',
-    globals: true
-  }
+    }
 })
