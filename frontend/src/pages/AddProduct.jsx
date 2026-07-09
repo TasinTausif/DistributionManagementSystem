@@ -14,6 +14,7 @@ function AddProduct() {
         type: 'fresh_groceries',
         price: '',
         stock: '',
+        is_active: '1',
         image: null
     });
     const [preview, setPreview] = useState(null);
@@ -26,7 +27,6 @@ function AddProduct() {
             ...prev,
             [name]: value
         }));
-        // Clear error for this field
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: null }));
         }
@@ -127,9 +127,21 @@ function AddProduct() {
                         required
                     />
 
+                    <Select
+                        label="Status"
+                        name="is_active"
+                        value={formData.is_active}
+                        onChange={handleChange}
+                        options={[
+                            { value: '1', label: 'Active' },
+                            { value: '0', label: 'Inactive' }
+                        ]}
+                        error={errors.is_active ? errors.is_active[0] : null}
+                    />
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                         <Input
-                            label="Price ($)"
+                            label="Price (BDT)"
                             name="price"
                             type="number"
                             value={formData.price}

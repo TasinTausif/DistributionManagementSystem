@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { FaPlus, FaMinus, FaExchangeAlt, FaHistory, FaClipboardCheck } from 'react-icons/fa';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { FaPlus, FaMinus, FaExchangeAlt, FaHistory, FaClipboardCheck, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
 import api from '../api';
 import { Card, Button, Input, Select, Textarea, Badge } from '../components';
 
 function Inventory() {
+    const formRef = useRef(null);
     const [products, setProducts] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ function Inventory() {
         notes: ''
     });
     const [loading, setLoading] = useState(true);
+    const [editingId, setEditingId] = useState(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -37,7 +39,12 @@ function Inventory() {
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         try {
-            await api.post('/inventory', formData);
+            if (editingId) {
+                await api.put(`/inventory/${editingId}`, formData);
+                setEditingId(null);
+            } else {
+                await api.post('/inventory', formData);
+            }
             setFormData({
                 product_id: '',
                 quantity: '',
@@ -47,9 +54,9 @@ function Inventory() {
             });
             fetchData();
         } catch (error) {
-            console.error('Error adding inventory:', error);
+            console.error('Error:', error);
         }
-    }, [formData, fetchData]);
+    }, [formData, editingId, fetchData]);
 
     const handleChange = useCallback((e) => {
         const { name, value } = e.target;
@@ -77,6 +84,42 @@ function Inventory() {
         }
     }, []);
 
+    const handleEditClick = useCallback((transaction) => {
+        setEditingId(transaction.id);
+        setFormData({
+            product_id: transaction.product_id,
+            quantity: transaction.quantity,
+            purchase_price: transaction.purchase_price,
+            transaction_type: transaction.transaction_type,
+            notes: transaction.notes || ''
+        });
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
+    }, []);
+
+    const handleCancelEdit = useCallback(() => {
+        setEditingId(null);
+        setFormData({
+            product_id: '',
+            quantity: '',
+            purchase_price: '',
+            transaction_type: 'purchase',
+            notes: ''
+        });
+    }, []);
+
+    const handleDelete = useCallback(async (id) => {
+        if (window.confirm('Are you sure you want to delete this transaction?')) {
+            try {
+                await api.delete(`/inventory/${id}`);
+                fetchData();
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+            }
+        }
+    }, [fetchData]);
+
 
     const transactionTypeOptions = useMemo(() => [
         { value: 'purchase', label: 'Purchase (Add Stock)' },
@@ -97,9 +140,12 @@ function Inventory() {
         <div className="container">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
 
-                {/* Transaction Form */}
-                <div>
-                    <Card title="Record Transaction" icon={FaClipboardCheck} style={{ position: 'sticky', top: '2rem' }}>
+                <div ref={formRef}>
+                    <Card
+                        title={editingId ? "Edit Transaction" : "Record Transaction"}
+                        icon={FaClipboardCheck}
+                        style={{ position: 'sticky', top: '2rem' }}
+                    >
                         <form onSubmit={handleSubmit}>
                             <Select
                                 label="Product"
@@ -108,6 +154,7 @@ function Inventory() {
                                 onChange={handleChange}
                                 options={productOptions}
                                 required
+                                disabled={editingId}
                             />
 
                             <Select
@@ -117,6 +164,7 @@ function Inventory() {
                                 onChange={handleChange}
                                 options={transactionTypeOptions}
                                 required
+                                disabled={editingId}
                             />
 
                             <Input
@@ -130,7 +178,7 @@ function Inventory() {
                             />
 
                             <Input
-                                label="Unit Price ($)"
+                                label="Unit Price (BDT)"
                                 name="purchase_price"
                                 type="number"
                                 value={formData.purchase_price}
@@ -148,14 +196,27 @@ function Inventory() {
                                 rows={3}
                             />
 
-                            <Button
-                                type="submit"
-                                className="btn-block"
-                                style={{ width: '100%' }}
-                                icon={FaPlus}
-                            >
-                                Record Transaction
-                            </Button>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <Button
+                                    type="submit"
+                                    className="btn-block"
+                                    style={{ flex: 1 }}
+                                    icon={editingId ? FaEdit : FaPlus}
+                                >
+                                    {editingId ? 'Update Transaction' : 'Record Transaction'}
+                                </Button>
+                                {editingId && (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={handleCancelEdit}
+                                        icon={FaTimes}
+                                        title="Cancel"
+                                    >
+                                        Cancel
+                                    </Button>
+                                )}
+                            </div>
                         </form>
                     </Card>
                 </div>
@@ -195,6 +256,7 @@ function Inventory() {
                                         <th>Qty</th>
                                         <th>Price</th>
                                         <th>Notes</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -211,13 +273,31 @@ function Inventory() {
                                             <td style={{ fontWeight: 'bold' }}>
                                                 {t.transaction_type === 'sale' ? '-' : '+'}{t.quantity}
                                             </td>
-                                            <td>${t.purchase_price}</td>
+                                            <td style={{ whiteSpace: 'nowrap' }}>BDT {t.purchase_price}</td>
                                             <td>{t.notes || '-'}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        onClick={() => handleEditClick(t)}
+                                                        icon={FaEdit}
+                                                        title="Edit"
+                                                    />
+                                                    <Button
+                                                        variant="danger"
+                                                        size="sm"
+                                                        onClick={() => handleDelete(t.id)}
+                                                        icon={FaTrash}
+                                                        title="Delete"
+                                                    />
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))}
                                     {transactions.length === 0 && (
                                         <tr>
-                                            <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
+                                            <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
                                                 No transactions recorded yet.
                                             </td>
                                         </tr>

@@ -1,6 +1,4 @@
-import { forwardRef } from 'react';
-
-const Select = forwardRef(({
+const Select = ({
     label,
     name,
     options = [],
@@ -8,8 +6,9 @@ const Select = forwardRef(({
     className = '',
     children,
     value,
+    ref,
     ...props
-}, ref) => {
+}) => {
     return (
         <div className="form-group">
             {label && <label htmlFor={name} className="form-label">{label}</label>}
@@ -30,8 +29,6 @@ const Select = forwardRef(({
             {error && <div className="invalid-feedback">{error}</div>}
         </div>
     );
-});
-
-Select.displayName = 'Select';
+};
 
 export default Select;

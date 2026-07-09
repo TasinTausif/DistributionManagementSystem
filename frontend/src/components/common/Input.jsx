@@ -1,13 +1,4 @@
-import { forwardRef } from 'react';
-
-const Input = forwardRef(({
-    label,
-    name,
-    error,
-    className = '',
-    type = 'text',
-    ...props
-}, ref) => {
+const Input = ({ label, name, error, className = '', type = 'text', ref, ...props }) => {
     return (
         <div className="form-group">
             {label && <label htmlFor={name} className="form-label">{label}</label>}
@@ -22,8 +13,6 @@ const Input = forwardRef(({
             {error && <div className="invalid-feedback">{error}</div>}
         </div>
     );
-});
-
-Input.displayName = 'Input';
+};
 
 export default Input;

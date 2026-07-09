@@ -2,7 +2,7 @@ import Navbar from './Navbar';
 
 function Layout({ children }) {
     return (
-        <div className="app">
+        <div>
             <Navbar />
             <div className="content">
                 {children}

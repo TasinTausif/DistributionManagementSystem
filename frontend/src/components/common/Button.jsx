@@ -8,12 +8,6 @@ const variants = {
     warning: 'btn-warning',
 };
 
-const sizes = {
-    sm: 'btn-sm',
-    md: '',
-    lg: 'btn-lg',
-};
-
 const Button = ({
     children,
     variant = 'primary',
@@ -22,11 +16,11 @@ const Button = ({
     loading = false,
     disabled = false,
     type = 'button',
-    icon: Icon,
+    icon: Icon,//Renaming the prop icon to Icon to avoid confusion with the HTML attribute
     ...props
 }) => {
     const variantClass = variants[variant] || variants.primary;
-    const sizeClass = sizes[size] || sizes.md;
+    const sizeClass = `btn-${size}`;
 
     return (
         <button

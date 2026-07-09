@@ -77,7 +77,7 @@ function ProductDetails() {
             type: formData.type,
             price: formData.price,
             stock: formData.stock,
-            is_active: formData.is_active,
+            is_active: formData.is_active ? 1 : 0,
         };
 
         try {
@@ -184,7 +184,7 @@ function ProductDetails() {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <Input
-                                label="Price ($)"
+                                label="Price (BDT)"
                                 name="price"
                                 type="number"
                                 value={formData.price || ''}
@@ -200,6 +200,17 @@ function ProductDetails() {
                                 onChange={handleChange}
                             />
                         </div>
+
+                        <Select
+                            label="Status"
+                            name="is_active"
+                            value={formData.is_active ? '1' : '0'}
+                            onChange={(e) => handleChange({ target: { name: 'is_active', value: e.target.value === '1' } })}
+                            options={[
+                                { value: '1', label: 'Active' },
+                                { value: '0', label: 'Inactive' }
+                            ]}
+                        />
 
                         <div className="form-group">
                             <label className="form-label">Product Image</label>
@@ -298,7 +309,7 @@ function ProductDetails() {
                                     <div>
                                         <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Price</div>
                                         <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary-color)' }}>
-                                            ${product.price}
+                                            BDT {product.price}
                                         </div>
                                     </div>
                                     <div>
@@ -378,7 +389,7 @@ function ProductDetails() {
                                                         </Badge>
                                                     </td>
                                                     <td>{transaction.quantity}</td>
-                                                    <td>${transaction.purchase_price}</td>
+                                                    <td>BDT {transaction.purchase_price}</td>
                                                     <td>{transaction.notes || '-'}</td>
                                                 </tr>
                                             ))}

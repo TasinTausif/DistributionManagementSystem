@@ -1,13 +1,12 @@
-import { forwardRef } from 'react';
-
-const Textarea = forwardRef(({
+const Textarea = ({
     label,
     name,
     error,
     className = '',
     rows = 3,
+    ref,
     ...props
-}, ref) => {
+}) => {
     return (
         <div className="form-group">
             {label && <label htmlFor={name} className="form-label">{label}</label>}
@@ -22,8 +21,6 @@ const Textarea = forwardRef(({
             {error && <div className="invalid-feedback">{error}</div>}
         </div>
     );
-});
-
-Textarea.displayName = 'Textarea';
+};
 
 export default Textarea;

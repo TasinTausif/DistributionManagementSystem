@@ -5,8 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Inventory;
 use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\InventoryRequest;
 use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
@@ -27,31 +26,14 @@ class InventoryController extends Controller
     /**
      * Store a newly created resource in storage (Purchase products).
      */
-    public function store(Request $request)
+    public function store(InventoryRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'purchase_price' => 'required|numeric|min:0',
-            'transaction_type' => 'required|in:purchase,sale,adjustment',
-            'notes' => 'nullable|string'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         DB::beginTransaction();
         try {
-            $data = $validator->validated();
+            $data = $request->validated();
             
-            // Create inventory transaction
             $inventory = Inventory::create($data);
             
-            // Update product stock
             $product = Product::find($data['product_id']);
             if ($data['transaction_type'] === 'purchase' || $data['transaction_type'] === 'adjustment') {
                 $product->stock += $data['quantity'];
@@ -133,7 +115,7 @@ class InventoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(InventoryRequest $request, string $id)
     {
         $inventory = Inventory::find($id);
 
@@ -147,20 +129,7 @@ class InventoryController extends Controller
             ], 404);
         }
 
-        $validator = Validator::make($request->all(), [
-            'quantity' => 'sometimes|required|integer|min:1',
-            'purchase_price' => 'sometimes|required|numeric|min:0',
-            'notes' => 'nullable|string'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $inventory->update($validator->validated());
+        $inventory->update($request->validated());
 
         return response()->json([
             'success' => true,

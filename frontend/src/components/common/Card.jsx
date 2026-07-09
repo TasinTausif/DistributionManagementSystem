@@ -6,10 +6,10 @@ const Card = ({
     icon: Icon,
     action,
     className = '',
-    style = {}
+    ...props
 }) => {
     return (
-        <div className={`card ${className}`} style={style}>
+        <div className={`card ${className}`} {...props}>
             {(title || Icon || action) && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                     {(title || Icon) && (

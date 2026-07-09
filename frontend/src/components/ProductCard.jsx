@@ -30,7 +30,7 @@ function ProductCard({ product, onDelete }) {
                 </p>
                 <div className="product-footer">
                     <div>
-                        <div className="product-price">${product.price}</div>
+                        <div className="product-price">BDT {product.price}</div>
                         <div className="product-stock">
                             Stock: {product.stock}
                             <Badge variant={stockVariant} style={{ marginLeft: '0.5rem' }}>
