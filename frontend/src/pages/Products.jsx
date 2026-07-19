@@ -9,6 +9,7 @@ function Products() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
 
+    // useCallback remembers the function definition only. When the function is called, it will always call the api and does the rest of the work. useCallback just caches the function definition, it does not change the value. That is performed by useEffect
     const fetchProducts = useCallback(async () => {
         try {
             const response = await api.get('/products');
@@ -35,6 +36,7 @@ function Products() {
         }
     }, [fetchProducts]);
 
+    // It helps remembering the result of the function and only recalculates when the dependencies change.
     const filteredProducts = useMemo(() => {
         return filter === 'all'
             ? products
@@ -42,7 +44,7 @@ function Products() {
     }, [products, filter]);
 
     if (loading) {
-        return <div className="loading"><FaBoxOpen className="spin" /> Loading products...</div>;
+        return <div className="loading"><FaBoxOpen /> Loading products...</div>;
     }
 
     return (

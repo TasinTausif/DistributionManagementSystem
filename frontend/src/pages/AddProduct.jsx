@@ -39,6 +39,7 @@ function AddProduct() {
                 ...prev,
                 image: file
             }));
+            // It creates a temporary local URL that points to that file so that it can be displayed in the browser without uploading it to the server first.
             setPreview(URL.createObjectURL(file));
         }
     };
@@ -49,6 +50,7 @@ function AddProduct() {
         setErrors({});
 
         const data = new FormData();
+        // Looping over every key in the formData object and appending it to the FormData. This is necessary for sending files (like images) along with other form data in a multipart/form-data request.
         Object.keys(formData).forEach(key => {
             if (formData[key] !== null) {
                 data.append(key, formData[key]);
